@@ -17,6 +17,7 @@ DB_FILE=path+"/local.db"
 datetime_format = '%Y-%m-%d %H:%M:%S'
 
 attachments_channel_id=709879418348109837
+guild_id=709849137251745963
 
 async def checkArguments(channel, argsExpected, commandText, tokens):
   if len(tokens) < argsExpected:
@@ -24,6 +25,14 @@ async def checkArguments(channel, argsExpected, commandText, tokens):
     return False
   else:
     return True
+
+def get_user(id):
+    user = client.get_user(id)
+    if user is None:
+        user = "Unknown"
+    else:
+        user = user.name
+    return user
 
 async def commands(channel, author, client):
   #make rich embed
@@ -85,7 +94,7 @@ async def stats(channel, author, client, tokens):
     await channel.send("File not found!")
   else:
     f_id = str(f[0])
-    u_id = str(f[1])
+    u_id = str(get_user(f[1]))
     file_name = str(f[2])
     name = str(f[3])
     map_name = str(f[4])
@@ -93,23 +102,33 @@ async def stats(channel, author, client, tokens):
     time = str(f[6])
     downvotes = str(f[7])
     upvotes = str(f[8])
-    await channel.send("File id: " + f_id + " File name: " + file_name + " - Name: " + name + " - Map: " + map_name + " - Description: " + description + " Upvotes: " + upvotes + " Downvotes: " + downvotes)
+    link = "https://discordapp.com/channels/" + str(guild_id) + "/" + str(attachments_channel_id) + "/" + f_id
+    embed_desc="[Link](" + link + ")\n" + description
+    embedMessage = discord.Embed(title=name, description=embed_desc, color=0xe3f503)
+    embedMessage.add_field(name="Uploader", value=u_id, inline=True)
+    embedMessage.add_field(name="File Name", value=file_name, inline=True)
+    embedMessage.add_field(name="Mod Type", value=map_name, inline=True)
+    embedMessage.add_field(name="Upvotes", value=upvotes, inline=True)
+    embedMessage.add_field(name="Downvotes", value=downvotes, inline=True)
+    embedMessage.add_field(name="Upload Date", value=time, inline=True)
+    await channel.send(embed=embedMessage)
 
 async def top(channel, author, client, tokens):
   values = sqldb.get_top(10)
-  out_string = ""
+  embedMessage = discord.Embed(title="Top 10 Files", color=0xe3f503)
   for f in values:
     f_id = str(f[0])
-    u_id = str(f[1])
+    u_id = str(get_user(f[1]))
     file_name = str(f[2])
     name = str(f[3])
     map_name = str(f[4])
     description = str(f[5])
     time = str(f[6])
     score = str(f[7])
-    out_string += "File id: " + f_id + " Name: " + name  + " Score: " + score + " Description: " + description + "\n"
-    
-  await channel.send(out_string)
+    link = "https://discordapp.com/channels/" + str(guild_id) + "/" + str(attachments_channel_id) + "/" + f_id
+    message="[Link](" + link + ")\n" + "**Score:** " + score + "\n" + description + "\n**ID:** " + f_id
+    embedMessage.add_field(name=name + " - " + map_name, value=message, inline=False)
+  await channel.send(embed=embedMessage)
   return
 
 async def parse_command(client,channel,author,name,content):
