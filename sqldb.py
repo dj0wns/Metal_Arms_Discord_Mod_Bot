@@ -138,3 +138,15 @@ def get_top(count):
     print(e)
   finally:
     conn.close()
+
+def delete_item(f_id):
+  try:
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("DELETE FROM files where embed_id=?", (f_id,))
+    conn.commit()
+  except Error as e:
+    print(e)
+  finally:
+    conn.close()
+

@@ -131,6 +131,14 @@ async def top(channel, author, client, tokens):
   await channel.send(embed=embedMessage)
   return
 
+async def delete(channel, author, client, tokens):
+  if author.id != 179808295895302155: #dj0wns ID, no one else can delete anything
+    await channel.send("You are not allowed to use this command.")
+  else:
+    sqldb.delete_item(tokens[1])
+    await channel.send("Deleted file if it exists.")
+
+
 async def parse_command(client,channel,author,name,content):
   if not content[0] == '!':
     return False
@@ -151,6 +159,8 @@ async def parse_command(client,channel,author,name,content):
     await stats(channel, author, client, tokens)
   elif operation == "top":
     await top(channel, author, client, tokens)
+  elif operation == "delete" and await checkArguments(channel, 1, operation, tokens):
+    await delete(channel, author, client, tokens)
     
     
   
